@@ -7,21 +7,34 @@ import {
   Dimensions,
   TextInput
 } from "react-native";
+import propTypes from "prop-types";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
 export default class ToDo extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isEditing: false,
+      toDoValue: props.text
+    };
+  }
+
   // 기본상태 값 세팅
-  state = {
-    isEditing: false,
-    isCompleted: false,
-    toDoValue: ""
+  static propTypes = {
+    text: propTypes.string.isRequired,
+    isCompleted: propTypes.bool.isRequired,
+    deleteToDo: propTypes.func.isRequired,
+    id: propTypes.string.isRequired,
+    completeToDo: propTypes.func.isRequired,
+    uncompleteToDo: propTypes.func.isRequired,
+    updateToDo: propTypes.func.isRequired
   };
 
   render() {
-    const { isEditing, isCompleted, toDoValue } = this.state;
-    const { text } = this.props;
+    const { isEditing, toDoValue } = this.state;
+    const { text, id, deleteToDo, isCompleted } = this.props;
     return (
       <View style={styles.container}>
         <View style={styles.column}>
@@ -37,8 +50,8 @@ export default class ToDo extends Component {
           {isEditing ? (
             <TextInput
               style={[
-                styles.input,
                 styles.text,
+                styles.input,
                 isCompleted ? styles.completedText : styles.uncompletedText
               ]}
               value={toDoValue}
@@ -52,6 +65,7 @@ export default class ToDo extends Component {
             <Text
               style={[
                 styles.text,
+                styles.input,
                 isCompleted ? styles.completedText : styles.uncompletedText
               ]}
             >
@@ -85,7 +99,12 @@ export default class ToDo extends Component {
                 />
               </View>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPressOut={event => {
+                event.stopPropagation;
+                deleteToDo(id);
+              }}
+            >
               <View style={styles.actionContainer}>
                 <MaterialCommunityIcons
                   style={styles.actionText}
@@ -101,21 +120,26 @@ export default class ToDo extends Component {
     );
   }
   // 분기 시점??
-  _toggleComplete = () => {
-    this.setState(prevState => {
-      return {
-        isCompleted: !prevState.isCompleted
-      };
-    });
+  _toggleComplete = event => {
+    event.stopPropagation();
+    const { isCompleted, uncompleteToDo, completeToDo, id } = this.props;
+    if (isCompleted) {
+      uncompleteToDo(id);
+    } else {
+      completeToDo(id);
+    }
   };
-  _startEditing = () => {
-    const { text } = this.props;
+  _startEditing = event => {
+    event.stopPropagation();
     this.setState({
-      isEditing: true,
-      toDoValue: text
+      isEditing: true
     });
   };
-  _finishEditing = () => {
+  _finishEditing = event => {
+    event.stopPropagation();
+    const { toDoValue } = this.state;
+    const { id, updateToDo } = this.props;
+    updateToDo(id, toDoValue);
     this.setState({
       isEditing: false
     });
@@ -162,7 +186,6 @@ const styles = StyleSheet.create({
   column: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     width: width / 2
   },
   actions: {
@@ -173,7 +196,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 10
   },
   input: {
+    width: width / 2,
     marginVertical: 10,
-    width: width / 2
+    paddingTop: 5,
+    paddingBottom: 5
   }
 });
