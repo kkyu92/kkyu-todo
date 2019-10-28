@@ -60,6 +60,7 @@ export default class ToDo extends Component {
               returnKeyType={"done"}
               // text 포커스 중 칸 밖을 클릭하면 종료
               onBlur={this._finishEditing}
+              underlineColorAndroid={"transparent"}
             />
           ) : (
             <Text

@@ -50,6 +50,7 @@ export default class App extends React.Component {
             autoCorrect={false}
             // 키보드 입력 완료버튼 클릭시 불림
             onSubmitEditing={this._addToDo}
+            underlineColorAndroid={"transparent"}
           />
           <ScrollView contentContainerStyle={styles.toDos}>
             {Object.values(toDos)
@@ -78,10 +79,10 @@ export default class App extends React.Component {
     try {
       const toDos = await AsyncStorage.getItem("toDos");
       const parsedToDos = JSON.parse(toDos);
-      console.log(parsedToDos);
+      // console.log(parsedToDos);
       this.setState({
         loadedToDos: true,
-        toDos: parsedToDos
+        toDos: parsedToDos || {}
       });
     } catch (error) {
       console.log(error);
